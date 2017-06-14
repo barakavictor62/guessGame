@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GuessGame</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+</head>
+<body>
+<div class="gamebox" id="container">
+    <h1>GuessNum</h1>
+    <h4>Enter your guess(between 1 and 100) in the text box to play</h4>
+    <button type="button" id="clear" onclick="start()">Start</button>
+    <div id="hide">
+        <!--<div class="progress_bar" id="bar">-->
+        <div id="fill_bar"></div>
+        <!--</div>-->
+        <div class="pleft">
+            <p class="guesses"></p></br>
+            <p class="lastResult"></p>
+            <p class="lowOrHi"></p>
+        </div>
+        <span class="textleft">
+<label for="guessField">Enter your guess:</label>
+            <input type="text" class="guessField" id="guessField" required></span></br>
+    </div>
+    <button type="submit" class="guessSubmit" id="submitbutton">Submit Guess</button>
+</div>
+</body>
+</html>
+<script>
+    var randomNumber= Math.floor(Math.random()*100)+1;
+    var guesses= document.querySelector('.guesses');
+    var lastResult = document.querySelector('.lastResult');
+    var lowOrHi = document.querySelector('.lowOrHi');
+    var guessSubmit = document.querySelector('.guessSubmit');
+    var guessField = document.querySelector('.guessField');
+    var guessCount=1;
+    var resetButton;
+    lastResult.style.display='none';
+    lowOrHi.style.display='none';
+    var fill=document.getElementById("fill_bar");
+    var width=1;
+    document.getElementById("submitbutton").style.display="none";
+
+    //.........Display hidden game elements.....................................................................................
+    function start() {
+        document.getElementById("hide").style.display="block";
+        document.getElementById("clear").style.display="none";
+        document.getElementById("submitbutton").style.display="block";
+        fillit();
+    }
+
+    //......Progress bar code..................................................................................
+    function fillit(){
+        if(width<=100) {
+            timeout =setTimeout(fillit,500);
+            fill.style.width = width + '%';
+            fill.textContent =width ;
+            if (width>=50 && width<80) {
+                document.getElementById("fill_bar").style.backgroundColor = "orange";
+            }
+            else if(width>=80 && width<100) {
+                document.getElementById("fill_bar").style.backgroundColor = "red";
+            }
+            else if (width === 100) {
+                    lastResult.style.display = 'block';
+                    lastResult.textContent = "GAME OVER!!!";
+                    lastResult.style.color = "red";
+                    setGameOver();
+                }
+        }
+        width ++;
+    }
+
+    //......User succeeds before time out................................................................................
+    function stopTime() {
+        clearTimeout(timeout);
+        setGameOver();
+    }
+
+    //.......Game over function.......................................................................................
+    function setGameOver() {
+        guessField.disabled= true;
+        guessSubmit.style.display='none';
+        resetButton=document.createElement('button');
+        resetButton.textContent='Reset';
+        var div=document.getElementById("container");
+        div.appendChild(resetButton);
+        resetButton.addEventListener('click', resetGame);
+    }
+
+    //.........Restart Game if failed or success..............................................................................................
+    function resetGame() {
+        lastResult.style.display='none';
+        lowOrHi.style.display='none';
+        guessCount=1;
+        var resetParas=document.querySelectorAll('p');
+        for( var i=0; i<resetParas.length; i++){
+            resetParas[i].textContent='';
+        }
+        fill.style.width=0+'%';
+        fill.textContent="";
+        width=1;
+        document.getElementById("fill_bar").style.backgroundColor = "limegreen";
+        resetButton.parentNode.removeChild(resetButton);
+        guessField.disabled=false;
+        guessSubmit.style.display='block';
+        guessField.value='';
+        guessField.focus();
+        /*lastResult.style.backgroundColor='white';*/
+        randomNumber= Math.floor(Math.random()*100)+1;
+        fillit();
+    }
+
+    //.........Check user input and run logic based on input.............................................................................................
+    function checkGuess() {
+        var test=/^[0-9]+$/.test(guessField.value);
+        if(test=== false){
+            lastResult.style.display='block';
+            lastResult.textContent='Your input is not a number!!';
+            lastResult.style.color='red';
+            guessField.textContent='';
+            guessField.focus();
+        }
+        else {
+            var inputGuess = Number(guessField.value);
+            if (guessCount === 1) {
+                guesses.textContent = 'Previous Guesses: ';
+            }
+            guesses.textContent += inputGuess + ',';
+            if (inputGuess === randomNumber) {
+                lastResult.style.display = 'block';
+                lowOrHi.style.display = 'block';
+                lastResult.textContent = 'Congratulations!!';
+                lastResult.style.color = 'green';
+                lowOrHi.textContent = '';
+                stopTime();
+            }
+            else {
+                lastResult.style.display = 'block';
+                lowOrHi.style.display = 'block';
+                lastResult.textContent = 'Wrong!!!!';
+                lastResult.style.color = 'red';
+                if (inputGuess < randomNumber) {
+                    lowOrHi.textContent = 'last guess was too low';
+                }
+                else if (inputGuess > randomNumber) {
+                    lowOrHi.textContent = 'last guess was too high';
+
+                }
+            }
+            guessCount++;
+            guessField.value = '';
+            guessField.focus();
+        }
+    }
+    guessSubmit.addEventListener('click',checkGuess);
+</script>
